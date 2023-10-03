@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class FanSpin : MonoBehaviour
+public class MenuScript : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
@@ -13,6 +14,11 @@ public class FanSpin : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Rotate(0, 1, 0);
+        
+    }
+
+    public void changeSceneTo(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName);
     }
 }
