@@ -9,7 +9,11 @@ public abstract class InteractableObject : MonoBehaviour
 
     public abstract void Interact(InteractionController source);
 
-    public abstract string GetInteractionDescription();
+    public abstract string GetInteractionDescription(InteractionController source);
+
+    public virtual void Update() { }
+
+    public virtual void Start() { }
 
     public double GetMaxDistance()
     {

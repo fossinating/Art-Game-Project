@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class FanSwitch : InteractableObject
+public class LightSwitch : InteractableObject
 {
-    [SerializeField] GameObject fan;
+    [SerializeField] GameObject lightSource;
     [SerializeField] bool on = false;
     float position;
 
     override public string GetInteractionDescription(InteractionController source)
     {
-        return $"Turn fan {(on ? "off": "on")}";
+        return $"Turn light {(on ? "off" : "on")}";
     }
 
     public override void Interact(InteractionController source)
     {
         on = !on;
-        fan.GetComponent<Fan_Rotation>().setOn(on);
+        lightSource.SetActive(on);
     }
 
     public override void Start()

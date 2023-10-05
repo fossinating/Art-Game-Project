@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class Lamp : InteractableObject
@@ -10,7 +9,7 @@ public class Lamp : InteractableObject
 
 
     [SerializeField] public GameObject Light;
-    public override string GetInteractionDescription()
+    public override string GetInteractionDescription(InteractionController source)
     {
         return $"Turn lamp o{(Light.activeSelf ? "ff" : "n")}";
     }
