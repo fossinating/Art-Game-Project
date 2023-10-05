@@ -37,7 +37,24 @@ public class InteractionController : MonoBehaviour
         }
         else
         {
-            interactionDescriptionVisibility = Math.Max(interactionDescriptionVisibility - .1, 0.0);
+            if (sitting)
+            {
+                interactionDescription.GetComponent<TextMeshProUGUI>().text = "Get up";
+                interactionDescriptionVisibility = Math.Max(interactionDescriptionVisibility + .1, 0.0);
+                if (Input.GetMouseButtonDown(0))
+                {
+                    sitting = false;
+                    GetComponentInParent<FirstPersonController>().playerCanMove = true;
+                    GetComponentInParent<Rigidbody>().isKinematic = false;
+                    GetComponentInParent<FirstPersonController>().gameObject.transform.SetParent(oldParent, true);
+                    GetComponentInParent<FirstPersonController>().gameObject.transform.localPosition = oldPosition;
+                    GetComponentInParent<FirstPersonController>().gameObject.transform.localScale = Vector3.one;
+
+                }
+            } else
+            {
+                interactionDescriptionVisibility = Math.Max(interactionDescriptionVisibility - .1, 0.0);
+            }
             Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
         }
         interactionDescription.GetComponent<TextMeshProUGUI>().alpha = (float)interactionDescriptionVisibility;
@@ -80,5 +97,26 @@ public class InteractionController : MonoBehaviour
     public GameObject getHeldItem()
     {
         return heldItem;
+    }
+
+    Transform oldParent;
+    Vector3 oldPosition;
+    bool sitting = false;
+
+    public bool isSitting()
+    {
+        return sitting;
+    }
+
+    public void sitOnObject(GameObject seat)
+    {
+        sitting = true;
+        oldParent = GetComponentInParent<FirstPersonController>().gameObject.transform.parent;
+        oldPosition = GetComponentInParent<FirstPersonController>().gameObject.transform.localPosition;
+        GetComponentInParent<Rigidbody>().isKinematic = true;
+        GetComponentInParent<FirstPersonController>().playerCanMove = false;
+        GetComponentInParent<FirstPersonController>().gameObject.transform.SetParent(seat.transform, false);
+        GetComponentInParent<FirstPersonController>().gameObject.transform.localPosition = Vector3.zero;
+        GetComponentInParent<FirstPersonController>().gameObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
     }
 }
