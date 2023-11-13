@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class BeanBagChair : InteractableObject
 {
-    Transform oldParent = null;
     [SerializeField] GameObject seat;
     public override string GetInteractionDescription(InteractionController source)
     {

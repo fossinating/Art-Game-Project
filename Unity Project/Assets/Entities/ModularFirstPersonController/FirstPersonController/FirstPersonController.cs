@@ -55,7 +55,7 @@ public class FirstPersonController : MonoBehaviour
 
     #region Movement Variables
 
-    public bool playerCanMove = true;
+    [SerializeField] public bool playerCanMove = true;
     public float walkSpeed = 5f;
     public float maxVelocityChange = 10f;
 
@@ -130,6 +130,11 @@ public class FirstPersonController : MonoBehaviour
     private float timer = 0;
 
     #endregion
+
+    public void SetPlayerCanMove(bool canMove)
+    {
+        this.playerCanMove = canMove;
+    }
 
     private void Awake()
     {

@@ -18,13 +18,6 @@ public class Door : InteractableObject
     {
         open = !open;
         doorRoot.transform.localRotation = Quaternion.Euler(0, 0, open ? 80 : 0);
-        doorB.transform.localPosition = open ? new Vector3((float)-14.1, (float)3.1, 0) : new Vector3(-14, 0,0);
-        doorB.transform.localRotation = Quaternion.Euler(0, 0, open ? -170 : 0);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        doorB.transform.SetLocalPositionAndRotation(open ? new Vector3((float)-14.1, (float)3.1, 0) : new Vector3(-14, 0,0), Quaternion.Euler(0, 0, open ? -170 : 0));
     }
 }
