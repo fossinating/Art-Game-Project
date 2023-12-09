@@ -18,7 +18,7 @@ public class Fan_Rotation : MonoBehaviour {
 	{
 		if (on)
 		{
-			audioSource.GetComponent<AudioSource>().Play();
+			audioSource.GetComponents<AudioSource>()[0].Play();
 		}
 	}
 
@@ -28,16 +28,23 @@ public class Fan_Rotation : MonoBehaviour {
 		//rotation around z
 
 		transform.Rotate((new Vector3(0,0,1)) * Time.deltaTime*speed); 
+
+		if (on && !audioSource.GetComponents<AudioSource>()[0].isPlaying && !audioSource.GetComponents<AudioSource>()[1].isPlaying)
+        {
+            audioSource.GetComponents<AudioSource>()[1].Play();
+        }
 	}
 
 	public void setOn(bool on) {
 		this.on = on;
 		if (on)
 		{
-			audioSource.GetComponent<AudioSource>().Play();
+			audioSource.GetComponents<AudioSource>()[0].Play();
 		} else
 		{
-			audioSource.GetComponent<AudioSource>().Stop();
-		}
+			audioSource.GetComponents<AudioSource>()[0].Stop();
+            audioSource.GetComponents<AudioSource>()[1].Stop();
+            audioSource.GetComponents<AudioSource>()[2].Play();
+        }
 	}
 }

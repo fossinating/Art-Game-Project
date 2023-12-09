@@ -31,7 +31,8 @@ public class TestingDummy : InteractableObject
         playerOldParent = player.transform.parent;
         player.transform.parent = playerCarrier.transform;
         GetComponent<PlayableDirector>().Play();
-        player.GetComponent<Rigidbody>().useGravity = false;
+        player.GetComponent<FirstPersonController>().useGravity = false;
+        player.GetComponent<FirstPersonController>().SetPlayerCanMove(false);
     }
 
     override public void Update()
@@ -39,7 +40,8 @@ public class TestingDummy : InteractableObject
         if (playerOldParent != null && GetComponent<PlayableDirector>().state != PlayState.Playing) {
             player.transform.parent = playerOldParent;
             playerOldParent = null;
-            player.GetComponent<Rigidbody>().useGravity = true;
+            player.GetComponent<FirstPersonController>().useGravity = true;
+            player.GetComponent<FirstPersonController>().SetPlayerCanMove(true);
             playerCarrier.GetComponent<Transform>().localPosition = Vector3.zero;
         }
     }

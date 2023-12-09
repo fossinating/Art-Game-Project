@@ -8,9 +8,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 #if UNITY_EDITOR
-    using UnityEditor;
+using UnityEditor;
     using System.Net;
 #endif
 
@@ -58,7 +59,8 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] public bool playerCanMove = true;
     [SerializeField] public bool playerCanFly = false;
     public float walkSpeed = 5f;
-    public float    = 10f;
+    [SerializeField] public float flyingSpeedMult = 2.5f;
+    public float maxVelocityChange = 10f;
     public bool isFlying = false;
     private float lastJumpTime = 0.0f;
 
@@ -99,7 +101,15 @@ public class FirstPersonController : MonoBehaviour
 
     public bool enableJump = true;
     public KeyCode jumpKey = KeyCode.Space;
-    public float jumpPower = 5f;
+    // CHANGES HERE DO NOTHING !!!!
+    public float jumpPower = 80f;
+
+    #endregion
+
+    #region Gravity
+
+    [NonSerialized] public bool useGravity = true;
+    [NonSerialized] public float gravityPower = 20f;
 
     // Internal Variables
     private bool isGrounded = false;
@@ -137,6 +147,17 @@ public class FirstPersonController : MonoBehaviour
     public void SetPlayerCanMove(bool canMove)
     {
         this.playerCanMove = canMove;
+    }
+
+    public void SetCameraCanMove(bool canMove)
+    {
+        this.cameraCanMove = canMove;
+    }
+
+    public void SetTicking(bool ticking)
+    {
+        this.cameraCanMove = ticking;
+        this.playerCanMove = ticking;
     }
 
     private void Awake()
@@ -368,10 +389,10 @@ public class FirstPersonController : MonoBehaviour
 
         if (playerCanFly && Input.GetKeyDown(jumpKey))
         {
-            if (lastJumpTime - Time.time < 0.5)
+            if (Time.time - lastJumpTime < 0.5)
             {
                 isFlying = !isFlying;
-                GetComponent<Rigidbody>().useGravity = !isFlying;
+                //GetComponent<Rigidbody>().useGravity = !isFlying;
                 lastJumpTime = 0.0f;
             } else
             {
@@ -411,20 +432,19 @@ public class FirstPersonController : MonoBehaviour
 
             if (isFlying)
             {
+                targetVelocity.y = Input.GetKey(crouchKey) ? -1f : Input.GetKey(jumpKey) ? 1f : 0f;
+                targetVelocity = playerCamera.transform.forward * targetVelocity.z + playerCamera.transform.right * targetVelocity.x + playerCamera.transform.up * targetVelocity.y;
+
+                float targetSpeed;
+
                 if (enableSprint && Input.GetKey(sprintKey) && sprintRemaining > 0f && !isSprintCooldown)
                 {
-                    targetVelocity = transform.TransformDirection(targetVelocity) * sprintSpeed;
-
-                    // Apply a force that attempts to reach our target velocity
-                    Vector3 velocity = rb.velocity;
-                    Vector3 velocityChange = (targetVelocity - velocity);
-                    velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-                    velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-                    velocityChange.y = 0;
+                    targetSpeed = sprintSpeed * flyingSpeedMult;
+                    
 
                     // Player is only moving when valocity change != 0
                     // Makes sure fov change only happens during movement
-                    if (velocityChange.x != 0 || velocityChange.z != 0)
+                    if (targetVelocity.x != 0 || targetVelocity.z != 0)
                     {
                         isSprinting = true;
 
@@ -438,32 +458,28 @@ public class FirstPersonController : MonoBehaviour
                             sprintBarCG.alpha += 5 * Time.deltaTime;
                         }
                     }
-
-                    rb.AddForce(velocityChange, ForceMode.VelocityChange);
                 }
                 // All movement calculations while walking
                 else
                 {
+                    targetSpeed = walkSpeed * flyingSpeedMult;
                     isSprinting = false;
 
                     if (hideBarWhenFull && sprintRemaining == sprintDuration)
                     {
                         sprintBarCG.alpha -= 3 * Time.deltaTime;
                     }
-
-                    targetVelocity = transform.TransformDirection(targetVelocity) * walkSpeed;
-
-                    // Apply a force that attempts to reach our target velocity
-                    Vector3 velocity = rb.velocity;
-                    Vector3 velocityChange = (targetVelocity - velocity);
-                    velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-                    velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-                    velocityChange.y = 0;
-
-                    rb.AddForce(velocityChange, ForceMode.VelocityChange);
                 }
+
+                targetVelocity = targetVelocity.normalized * targetSpeed;
+                // Apply a force that attempts to reach our target velocity
+                Vector3 velocity = rb.velocity;
+                Vector3 velocityChange = (targetVelocity - velocity);
+                velocityChange = velocityChange.normalized * Mathf.Clamp(velocityChange.magnitude, -maxVelocityChange, maxVelocityChange);
+
+                rb.AddForce(10*targetVelocity, ForceMode.Force);
             }
-            // All movement calculations shile sprint is active
+            // All movement calculations while sprint is active
             else if (enableSprint && Input.GetKey(sprintKey) && sprintRemaining > 0f && !isSprintCooldown)
             {
                 targetVelocity = transform.TransformDirection(targetVelocity) * sprintSpeed;
@@ -492,7 +508,7 @@ public class FirstPersonController : MonoBehaviour
                     }
                 }
 
-                rb.AddForce(velocityChange, ForceMode.VelocityChange);
+                rb.AddForce(10 * targetVelocity, ForceMode.Force);
             }
             // All movement calculations while walking
             else
@@ -513,10 +529,35 @@ public class FirstPersonController : MonoBehaviour
                 velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
                 velocityChange.y = 0;
 
-                rb.AddForce(velocityChange, ForceMode.VelocityChange);
+                rb.AddForce(10*targetVelocity, ForceMode.Force);
             }
         }
+        // Air resistance ! lol
+        // Horizontal stuff together
+        if (isFlying)
+        {
+            var radius = 1;
+            var p = 1.225f;
+            var cd = .47f;
+            var a = Mathf.PI * radius * radius;
+            var v = rb.velocity.magnitude;
 
+            var direction = -rb.velocity.normalized;
+            var forceAmount = (p * v * v * cd * a) / 2;
+            rb.AddForce(direction * forceAmount);
+        }
+        else
+        {
+            Vector3 hvel = rb.velocity;
+            hvel.y = 0;
+            rb.AddForce(-(hvel * hvel.magnitude) * .8f, ForceMode.Force);
+        }
+        /**/
+        // Gravity
+        if (!isFlying && useGravity)
+        { 
+            rb.AddForce(Vector3.down * gravityPower, ForceMode.Force);
+        }
         #endregion
     }
 
@@ -694,9 +735,11 @@ public class FirstPersonController : MonoBehaviour
         EditorGUILayout.Space();
 
         fpc.playerCanMove = EditorGUILayout.ToggleLeft(new GUIContent("Enable Player Movement", "Determines if the player is allowed to move."), fpc.playerCanMove);
+        fpc.playerCanFly = EditorGUILayout.ToggleLeft(new GUIContent("Enable Player Flight", "Determines if the player is allowed to fly."), fpc.playerCanFly);
 
         GUI.enabled = fpc.playerCanMove;
         fpc.walkSpeed = EditorGUILayout.Slider(new GUIContent("Walk Speed", "Determines how fast the player will move while walking."), fpc.walkSpeed, .1f, fpc.sprintSpeed);
+        fpc.flyingSpeedMult = EditorGUILayout.Slider(new GUIContent("Flight Speed Multiplier", "Determines the flight speed multiplier."), fpc.flyingSpeedMult, 1f, 25f);
         GUI.enabled = true;
 
         EditorGUILayout.Space();
@@ -765,7 +808,7 @@ public class FirstPersonController : MonoBehaviour
 
         GUI.enabled = fpc.enableJump;
         fpc.jumpKey = (KeyCode)EditorGUILayout.EnumPopup(new GUIContent("Jump Key", "Determines what key is used to jump."), fpc.jumpKey);
-        fpc.jumpPower = EditorGUILayout.Slider(new GUIContent("Jump Power", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
+        fpc.jumpPower = EditorGUILayout.Slider(new GUIContent("Jump Power", "Determines how high the player will jump."), fpc.jumpPower, .1f, 40f);
         GUI.enabled = true;
 
         EditorGUILayout.Space();

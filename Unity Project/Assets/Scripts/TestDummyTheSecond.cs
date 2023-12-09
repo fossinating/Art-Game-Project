@@ -38,7 +38,7 @@ public class TestDummyTheSecond : InteractableObject
         if (playerOldParent != null && GetComponent<PlayableDirector>().state != PlayState.Playing) {
             player.transform.parent = playerOldParent;
             playerOldParent = null;
-            player.GetComponent<Rigidbody>().useGravity = true;
+            player.GetComponent<FirstPersonController>().useGravity = true;
             playerCarrier.GetComponent<Transform>().localPosition = Vector3.zero;
         }
     }

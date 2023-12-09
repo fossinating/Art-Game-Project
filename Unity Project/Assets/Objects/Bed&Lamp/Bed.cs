@@ -6,7 +6,7 @@ public class Bed : InteractableObject
 {
     [SerializeField] GameObject fanSwitch;
     [SerializeField] GameObject ceilingLightSwitch;
-    [SerializeField] GameObject blackout;
+    [SerializeField] GameObject player;
     public override string GetInteractionDescription(InteractionController source)
     {
         return "Go to bed";
@@ -37,6 +37,8 @@ public class Bed : InteractableObject
         source.GetComponentInParent<FirstPersonController>().enabled = false; ;
         source.GetComponentInParent<FirstPersonController>().gameObject.transform.localPosition = new Vector3(0, 1, 0);
         source.GetComponentInParent<FirstPersonController>().gameObject.transform.localRotation = Quaternion.Euler(0,0,0);
-        blackout.GetComponent<BlackOutScreen>().fadeToBlack();
+        Debug.Log(player);
+        Debug.Log(player.GetComponentInChildren<FadeCanvas>());
+        player.GetComponentInChildren<FadeCanvas>().FadeToScene("First Dream");
     }
 }

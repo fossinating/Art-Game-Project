@@ -37,11 +37,11 @@ public class DialogController : MonoBehaviour
             {
                 primaryDialogOptionObject.GetComponent<RawImage>().color = dialogSelectionIndex == 0 ? Color.grey : Color.white;
                 secondaryDialogOptionObject.GetComponent<RawImage>().color = dialogSelectionIndex == 1 ? Color.grey : Color.white;
-                if (Input.GetKeyDown(KeyCode.RightArrow))
+                if (Input.GetKeyDown(KeyCode.DownArrow))
                 {
                     dialogSelectionIndex = 1;
                 }
-                if (Input.GetKeyDown(KeyCode.LeftArrow))
+                if (Input.GetKeyDown(KeyCode.UpArrow))
                 {
                     dialogSelectionIndex = 0;
                 }
@@ -52,7 +52,8 @@ public class DialogController : MonoBehaviour
                 Debug.Log("Ending");
                 if (!currentDialogNode.OnEnd(this)) // not continuing
                 {
-                    GetComponentInParent<FirstPersonController>().enabled = true;
+                    GetComponentInParent<FirstPersonController>().SetTicking(true);
+                    GetComponentInParent<InteractionController>().enabled = true;
 
                     this.currentDialogNode = null;
 
@@ -70,7 +71,8 @@ public class DialogController : MonoBehaviour
             return;
         }
 
-        GetComponentInParent<FirstPersonController>().enabled = false;
+        GetComponentInParent<FirstPersonController>().SetTicking(false);
+        GetComponentInParent<InteractionController>().enabled = false;
 
         this.currentDialogNode = dialogNode;
         
@@ -83,7 +85,8 @@ public class DialogController : MonoBehaviour
         if (dialogNode is DialogChoiceNode)
         {
             dialogSelectionIndex = 0;
-            layoutObject.GetComponent<RectTransform>().localPosition = new Vector3(0, 25, 0);
+            contentObject.GetComponent<RectTransform>().sizeDelta = new Vector3(705, 175, 0);
+            contentObject.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(370, -645, 0);
             primaryDialogOptionObject.SetActive(true);
             secondaryDialogOptionObject.SetActive(true);
             primaryDialogOptionObject.GetComponentInChildren<TextMeshProUGUI>().text = ((DialogChoiceNode)dialogNode).getDialogOptions()[0].getText();
@@ -92,7 +95,8 @@ public class DialogController : MonoBehaviour
         {
             primaryDialogOptionObject.SetActive(false);
             secondaryDialogOptionObject.SetActive(false);
-            layoutObject.GetComponent<RectTransform>().localPosition = new Vector3(0, -65, 0);
+            contentObject.GetComponent<RectTransform>().sizeDelta = new Vector3(950, 175, 0);
+            contentObject.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(494, -645, 0);
         }
     }
 }
